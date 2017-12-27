@@ -107,7 +107,7 @@
     <None Include="MSBuildTest_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Properties\Default.rd.xml" />
+    <Content Include="Properties\Default.rd.xml"/>
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -134,6 +134,29 @@
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
+  <ItemGroup>
+      <RawData Include="RawData\**\*.*" />
+  </ItemGroup>
+  <Target Name="ConvertData" BeforeTargets="Compile" Inputs="@(RawData)" Outputs="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
+    <ItemGroup>
+      <ConvertedData Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
+      <Content Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <!-- <AppxPackagePayload Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
+        <TargetPath>Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)</TargetPath>
+      </AppxPackagePayload> -->
+    </ItemGroup>
+    <Message Importance="high" Text="Creating Data: @(RawData) -> Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
+    <Copy SourceFiles="%(RawData.Identity)" DestinationFiles="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
+  </Target>
+  <Target Name="DisplayContent" AfterTargets="ConvertData" BeforeTargets="Compile">
+    <Message Importance="high" Text="RawData: @(RawData)" />
+    <Message Importance="high" Text="ConvertedData: @(ConvertedData)" />
+    <Message Importance="high" Text="Content: @(Content)" />
+    <Message Importance="high" Text="AppxPackagePayload: @(AppxPackagePayload)" />
+  </Target>
+
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
