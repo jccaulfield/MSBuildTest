@@ -2,18 +2,16 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-      <RawData Include="RawData\**\*.*" />
+      <RawData Include="RawData\**\*.*">
+        <Visible>True</Visible>
+      </RawData>
+  </ItemGroup>
+  <ItemGroup>
+      <Content Include="@(RawData-> 'Data\%(RecursiveDir)%(Filename)%(Extension)')">
+        <Visible>True</Visible>
+      </Content>
   </ItemGroup>
   <Target Name="ConvertData" BeforeTargets="Compile" Inputs="@(RawData)" Outputs="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
-    <ItemGroup>
-      <ConvertedData Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
-      <Content Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <!-- <AppxPackagePayload Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
-        <TargetPath>Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)</TargetPath>
-      </AppxPackagePayload> -->
-    </ItemGroup>
     <Message Importance="high" Text="Creating Data: %(RawData.Identity) -> Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
     <Copy SourceFiles="%(RawData.Identity)" DestinationFiles="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
   </Target>
