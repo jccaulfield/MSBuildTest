@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+      <RawData Include="RawData\**\*.*" />
+  </ItemGroup>
+  <Target Name="ConvertData" BeforeTargets="Compile" Inputs="@(RawData)" Outputs="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
+    <ItemGroup>
+      <ConvertedData Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
+      <Content Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <!-- <AppxPackagePayload Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
+        <TargetPath>Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)</TargetPath>
+      </AppxPackagePayload> -->
+    </ItemGroup>
+    <Message Importance="high" Text="Creating Data: %(RawData.Identity) -> Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
+    <Copy SourceFiles="%(RawData.Identity)" DestinationFiles="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
+  </Target>
+  <Target Name="DisplayContent" AfterTargets="ConvertData" BeforeTargets="Compile">
+    <Message Importance="high" Text="RawData: @(RawData)" />
+    <Message Importance="high" Text="ConvertedData: @(ConvertedData)" />
+    <Message Importance="high" Text="Content: @(Content)" />
+    <Message Importance="high" Text="AppxPackagePayload: @(AppxPackagePayload)" />
+  </Target>
+</Project>
