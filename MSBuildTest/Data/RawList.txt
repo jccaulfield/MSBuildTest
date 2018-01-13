@@ -1,2 +1,0 @@
-RawData\Hello.txt
-RawData\World.txt
