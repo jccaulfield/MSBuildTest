@@ -47,7 +47,7 @@
   -->
   <Target Name="ConvertData" BeforeTargets="AssignTargetPaths" Inputs="@(RawData)" Outputs="@(RawData-> 'Data\%(RecursiveDir)%(Filename)%(Extension)')">
     <ItemGroup>
-      <Content Include="@(RawData-> 'Data\%(RecursiveDir)%(Filename)%(Extension)')" />
+      <Content Include="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
     </ItemGroup>
     <Message Importance="high" Text="Converting Data: %(RawData.Identity) -&gt; Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
     <Copy SourceFiles="%(RawData.Identity)" DestinationFiles="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
