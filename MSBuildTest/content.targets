@@ -1,24 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- 
+  This project demonstrates the basics of MSBuild used for asset processing. 
+  You should understand basic MSBuild concepts (Properties, Items, Metadata, Targets, Tasks) to follow this.
+  See https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-concepts
+
+  Problems to solve:
+  -   If you modify one of the RawData objects (e.g., change the text RawData\Hello.txt), then every time
+      you run a build it will re-copy the exe to the build output folder. Not sure why this is.
+      Performing a full Rebuild, following by an incremental builds works as expected (i.e., the
+      incremental build does nothing).
+
+  -->
   <ItemGroup>
+      <!-- Raw Data are the source data files that are created by hand -->
       <RawData Include="RawData\**\*.*">
         <Visible>True</Visible>
       </RawData>
-  </ItemGroup>
-  <ItemGroup>
-      <Content Include="@(RawData-> 'Data\%(RecursiveDir)%(Filename)%(Extension)')">
+      <!-- ConvertedData demonstrates one-to-one building -->
+      <ConvertedData Include="@(RawData-> 'Data\%(RecursiveDir)%(Filename)%(Extension)')">
         <Visible>True</Visible>
-      </Content>
+      </ConvertedData>
+      <!-- DataList demonstrates many-to-one building and use of custom metadata -->
+      <DataList Include="Data\ConvertedList.txt">
+        <Visible>True</Visible>
+        <ListItems>@(ConvertedData)</ListItems>
+      </DataList>
+      <DataList Include="Data\RawList.txt">
+        <Visible>True</Visible>
+        <ListItems>@(RawData)</ListItems>
+      </DataList>
   </ItemGroup>
-  <Target Name="ConvertData" BeforeTargets="Compile" Inputs="@(RawData)" Outputs="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)">
-    <Message Importance="high" Text="Creating Data: %(RawData.Identity) -> Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
+  <!-- Remove all built objects -->
+  <Target Name="CleanData" BeforeTargets="Clean">
+    <Message Importance="high" Text="Deleting Data folder" />
+    <RemoveDir Directories="Data" />
+  </Target>
+  <!-- Convert (ok, just copy) RawData objects to ConvertedData objects. I'd like to specify Outputs="@(ConvertedData)" but that does not work -->
+  <Target Name="ConvertData" BeforeTargets="AssignTargetPaths" Inputs="@(RawData)" Outputs="@(RawData-> 'Data\%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Importance="high" Text="Converting Data: %(RawData.Identity) -&gt; Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
     <Copy SourceFiles="%(RawData.Identity)" DestinationFiles="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
   </Target>
-  <Target Name="DisplayContent" AfterTargets="ConvertData" BeforeTargets="Compile">
-    <Message Importance="high" Text="RawData: @(RawData)" />
-    <Message Importance="high" Text="ConvertedData: @(ConvertedData)" />
-    <Message Importance="high" Text="Content: @(Content)" />
-    <Message Importance="high" Text="AppxPackagePayload: @(AppxPackagePayload)" />
+  <!-- Generate a file containing a list of items. The item list is specified as metadata -->
+  <Target Name="CreateList" BeforeTargets="AssignTargetPaths" Inputs="%(DataList.ListItems)" Outputs="%(DataList.Identity)">
+    <Message Importance="high" Text="Creating List: %(DataList.ListItems) -&gt; %(DataList.Identity)" />
+    <WriteLinesToFile File="%(DataList.Identity)" Overwrite="True" Lines="%(DataList.ListItems)" />
+  </Target>
+  <!-- Some debug messages to list our inputs and outputs -->
+  <Target Name="DisplayContent" BeforeTargets="ConvertData">
+    <Message Importance="high" Text="Begin Debug Messages" />
+    <Message Importance="high" Text="  RawData: %(RawData.Identity)" />
+    <Message Importance="high" Text="  ConvertedData: %(ConvertedData.Identity)" />
+    <Message Importance="high" Text="  DataList: %(DataList.Identity)" />
+    <Message Importance="high" Text="End Debug Messages" />
   </Target>
 </Project>
