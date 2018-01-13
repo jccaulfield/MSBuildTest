@@ -31,22 +31,43 @@
         <ListItems>@(RawData)</ListItems>
       </DataList>
   </ItemGroup>
-  <!-- Remove all built objects -->
+  
+  <!--
+  Remove all built objects.
+  -->
   <Target Name="CleanData" BeforeTargets="Clean">
     <Message Importance="high" Text="Deleting Data folder" />
     <RemoveDir Directories="Data" />
   </Target>
-  <!-- Convert (ok, just copy) RawData objects to ConvertedData objects. I'd like to specify Outputs="@(ConvertedData)" but that does not work -->
+  
+  <!-- 
+  Convert (ok, just copy) RawData objects to ConvertedData objects. I'd like to specify Outputs="@(ConvertedData)" but that does not work - MSBuild
+  does not seem to see the Input/Output mapping as one-to-one in this case. 
+  Note that this target has to run before AssignTargetPaths in order for the generated Content items to be deployed.
+  -->
   <Target Name="ConvertData" BeforeTargets="AssignTargetPaths" Inputs="@(RawData)" Outputs="@(RawData-> 'Data\%(RecursiveDir)%(Filename)%(Extension)')">
+    <ItemGroup>
+      <Content Include="@(RawData-> 'Data\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
     <Message Importance="high" Text="Converting Data: %(RawData.Identity) -&gt; Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
     <Copy SourceFiles="%(RawData.Identity)" DestinationFiles="Data\%(RawData.RecursiveDir)%(RawData.Filename)%(RawData.Extension)" />
   </Target>
-  <!-- Generate a file containing a list of items. The item list is specified as metadata -->
+  
+  <!-- 
+  Generate a file containing a list of items. The items to list are specified as metadata.
+  Note that this target has to run before AssignTargetPaths in order for the generated Content items to be deployed.
+  -->
   <Target Name="CreateList" BeforeTargets="AssignTargetPaths" Inputs="%(DataList.ListItems)" Outputs="%(DataList.Identity)">
+    <ItemGroup>
+      <Content Include="%(DataList.Identity)" />
+    </ItemGroup>
     <Message Importance="high" Text="Creating List: %(DataList.ListItems) -&gt; %(DataList.Identity)" />
     <WriteLinesToFile File="%(DataList.Identity)" Overwrite="True" Lines="%(DataList.ListItems)" />
   </Target>
-  <!-- Some debug messages to list our inputs and outputs -->
+  
+  <!--
+  Some debug messages to list our inputs and outputs.
+  -->
   <Target Name="DisplayContent" BeforeTargets="ConvertData">
     <Message Importance="high" Text="Begin Debug Messages" />
     <Message Importance="high" Text="  RawData: %(RawData.Identity)" />

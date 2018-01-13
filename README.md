@@ -15,6 +15,10 @@ The source assets are referred to as **RawData** items in the msbuild file, and 
 There are also **DataList** items which are created by the build - they are text files containing a list of items, 
 with the item list to use being specified as custom item metadata.
 
+The **ConvertedData** and **DataList** items are deployed to the AppX folder when the deploy step is run. This is handled
+in the targets by adding them as Content items. Note that the targets must run before the *AssignTargetPaths* target
+in order for the Content items to be deployed correctly.
+
 # Building
 Clone the repository, and open MSBuildTest.sln with Visual Studio 2017. Select **Build/Build Solution** or **Build/Rebuild Solution** and you should see the following 
 in the Visual Studio output window:
